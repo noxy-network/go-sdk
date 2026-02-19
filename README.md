@@ -86,7 +86,7 @@ func main() {
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `Endpoint` | `string` | Yes | Noxy relay gRPC endpoint (e.g. `https://relay.noxy.network:443` or `localhost:4433`). Scheme is stripped; TLS is used by default. |
+| `Endpoint` | `string` | Yes | Noxy relay gRPC endpoint (e.g. `https://relay.noxy.network:443`). Scheme is stripped; TLS is used by default. |
 | `AuthToken` | `string` | Yes | Bearer token for relay authentication. Sent in the `Authorization` header on every request. |
 | `NotificationTTLSeconds` | `uint32` | Yes | Time-to-live for notifications in seconds. |
 
@@ -123,26 +123,6 @@ Returns quota usage for your application.
 2. **Key derivation**: The shared secret is expanded via HKDF-SHA256 to a 256-bit AES key.
 3. **Payload encryption**: The notification payload (JSON) is encrypted with AES-256-GCM. The ciphertext includes the GCM auth tag appended for integrity verification.
 4. **Transmission**: Only `kyber_ct`, `nonce`, and `ciphertext` are sent to the relay. The relay cannot decrypt; only the target device (with its secret key) can decrypt.
-
-## Development
-
-```bash
-# Generate proto and build (includes PQClean library for Kyber)
-make build
-
-# Or step by step:
-make pqclean-lib   # Fetches pq-wasm from GitHub and builds PQClean ML-KEM 768
-make proto         # Generate gRPC code
-CGO_ENABLED=1 go build ./...
-
-# Test
-go test ./...
-
-# Run example (requires NOXY_AUTH_TOKEN)
-go run ./examples/basic
-```
-
-**Note:** The build fetches [pq-wasm](https://github.com/noxy-network/pq-wasm) from GitHub (including the PQClean submodule). The Kyber provider uses PQClean ML-KEM 768 for full interoperability with the Node.js WASM and Rust pqcrypto-kyber implementations.
 
 ## License
 
