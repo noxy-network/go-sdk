@@ -1,0 +1,8 @@
+# PQClean build artifacts (built by make pqclean-lib)
+internal/kyber/build/
+
+# pq-wasm fetched from GitHub at build time
+.pq-wasm/
+
+/examples/
+
