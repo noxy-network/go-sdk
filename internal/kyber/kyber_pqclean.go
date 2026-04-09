@@ -3,8 +3,8 @@
 package kyber
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/../../.pq-wasm/pqclean/crypto_kem/ml-kem-768/clean -I${SRCDIR}/../../.pq-wasm/pqclean/common
-#cgo LDFLAGS: -L${SRCDIR}/build -lpqclean -lm
+#cgo CFLAGS: -I${SRCDIR}/pqclean/ml-kem-768 -I${SRCDIR}/pqclean/common
+#cgo LDFLAGS: -lm
 
 #include <stdint.h>
 int mlkem768_encapsulate(uint8_t *ct, uint8_t *ss, const uint8_t *pk);

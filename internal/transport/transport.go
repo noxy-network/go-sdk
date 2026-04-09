@@ -17,15 +17,16 @@ func normalizeEndpoint(endpoint string) string {
 	return strings.TrimSuffix(s, "/")
 }
 
-// NewPushServiceClient creates a gRPC client for PushService with Bearer auth.
-func NewPushServiceClient(ctx context.Context, endpoint, authToken string) (noxy.PushServiceClient, *grpc.ClientConn, error) {
+// NewAgentServiceClient creates a gRPC client for AgentService. Pass auth via metadata on each RPC.
+func NewAgentServiceClient(ctx context.Context, endpoint string) (noxy.AgentServiceClient, *grpc.ClientConn, error) {
+	_ = ctx
 	addr := normalizeEndpoint(endpoint)
 	creds := credentials.NewTLS(nil)
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		return nil, nil, err
 	}
-	client := noxy.NewPushServiceClient(conn)
+	client := noxy.NewAgentServiceClient(conn)
 	return client, conn, nil
 }
 

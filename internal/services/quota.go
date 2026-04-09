@@ -19,7 +19,7 @@ func NewQuotaService() *QuotaService {
 }
 
 // Get returns quota usage for the application.
-func (s *QuotaService) Get(ctx context.Context, client noxy.PushServiceClient, authToken string) (*types.NoxyGetQuotaResponse, error) {
+func (s *QuotaService) Get(ctx context.Context, client noxy.AgentServiceClient, authToken string) (*types.NoxyGetQuotaResponse, error) {
 	req := &noxy.GetQuotaRequest{
 		RequestId: uuid.New().String(),
 	}

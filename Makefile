@@ -1,4 +1,4 @@
-.PHONY: proto build test pqclean-lib pq-wasm
+.PHONY: proto build pqclean-lib pq-wasm
 
 # PQClean from pq-wasm (https://github.com/noxy-network/pq-wasm) - fetched at build time
 PQ_WASM := $(abspath .)/.pq-wasm
@@ -8,11 +8,15 @@ COMMON := $(PQCL)/common
 BUILD := $(abspath .)/internal/kyber/build
 LIBPQCL := $(BUILD)/libpqclean.a
 
+# Requires: protoc, protoc-gen-go, protoc-gen-go-grpc (see README).
+# GOPATH/bin is prepended so plugins work after: go install ...@latest
+PROTO_PATH := $(shell go env GOPATH)/bin:$(PATH)
+
 proto:
 	mkdir -p grpc/noxy
-	protoc --go_out=. --go_opt=module=github.com/noxy-network/go-sdk \
+	PATH="$(PROTO_PATH)" protoc --go_out=. --go_opt=module=github.com/noxy-network/go-sdk \
 		--go-grpc_out=. --go-grpc_opt=module=github.com/noxy-network/go-sdk \
-		-I proto proto/noxy.proto
+		-I proto proto/agent.proto
 
 # Fetch pq-wasm from GitHub (with pqclean submodule) if not present
 pq-wasm:
@@ -52,6 +56,3 @@ $(LIBPQCL):
 
 build: pqclean-lib proto
 	CGO_ENABLED=1 go build ./...
-
-test: build
-	go test ./...

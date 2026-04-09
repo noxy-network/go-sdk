@@ -1,6 +1,7 @@
-// Package noxy provides a Go SDK for the Noxy push notification network.
+// Package noxy provides a Go SDK for the Noxy Decision Layer.
 //
-// Send encrypted push notifications to Web3 wallet addresses via the Noxy relay.
+// Send encrypted, actionable decision payloads (tool proposals, approvals, next-step hints) to
+// registered agent devices over gRPC.
 package noxy
 
 import (
@@ -9,6 +10,7 @@ import (
 
 	"github.com/noxy-network/go-sdk/client"
 	"github.com/noxy-network/go-sdk/internal/config"
+	"github.com/noxy-network/go-sdk/internal/decisionoutcome"
 	"github.com/noxy-network/go-sdk/internal/types"
 )
 
@@ -18,31 +20,53 @@ type NoxyConfig struct {
 	Endpoint string
 	// AuthToken is the Bearer token for relay authentication.
 	AuthToken string
-	// NotificationTTLSeconds is the time-to-live for notifications in seconds.
-	NotificationTTLSeconds uint32
+	// DecisionTTLSeconds is the time-to-live for routed decisions in seconds.
+	DecisionTTLSeconds uint32
 }
 
-// InitNoxyClient initializes the SDK client. This is async because it establishes the gRPC connection.
-func InitNoxyClient(ctx context.Context, cfg NoxyConfig) (*client.NoxyPushClient, error) {
-	// Normalize endpoint: strip https:// or http://
+// InitNoxyAgentClient initializes the Decision Layer SDK client.
+func InitNoxyAgentClient(ctx context.Context, cfg NoxyConfig) (*client.NoxyAgentClient, error) {
 	endpoint := strings.TrimPrefix(cfg.Endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 	endpoint = strings.TrimSuffix(endpoint, "/")
 
 	internalCfg := &config.NoxyConfig{
-		Endpoint:               endpoint,
-		AuthToken:              cfg.AuthToken,
-		NotificationTTLSeconds: cfg.NotificationTTLSeconds,
+		Endpoint:           endpoint,
+		AuthToken:          cfg.AuthToken,
+		DecisionTTLSeconds: cfg.DecisionTTLSeconds,
 	}
-	return client.NewNoxyPushClient(ctx, internalCfg)
+	return client.NewNoxyAgentClient(ctx, internalCfg)
 }
 
 // Re-export types for convenience.
 type (
-	NoxyPushClient        = client.NoxyPushClient
-	NoxyIdentityAddress   = types.NoxyIdentityAddress
-	NoxyPushResponse      = types.NoxyPushResponse
-	NoxyPushDeliveryStatus = types.NoxyPushDeliveryStatus
-	NoxyGetQuotaResponse  = types.NoxyGetQuotaResponse
-	NoxyQuotaStatus       = types.NoxyQuotaStatus
+	NoxyAgentClient                = client.NoxyAgentClient
+	NoxyIdentityAddress            = types.NoxyIdentityAddress
+	NoxyDeliveryOutcome            = types.NoxyDeliveryOutcome
+	NoxyDeliveryStatus             = types.NoxyDeliveryStatus
+	NoxyHumanDecisionOutcome       = types.NoxyHumanDecisionOutcome
+	NoxyGetDecisionOutcomeResponse = types.NoxyGetDecisionOutcomeResponse
+	NoxyGetQuotaResponse           = types.NoxyGetQuotaResponse
+	NoxyQuotaStatus                = types.NoxyQuotaStatus
+	WaitForDecisionOutcomeOptions  = decisionoutcome.WaitForDecisionOutcomeOptions
+	SendDecisionAndWaitOptions     = decisionoutcome.SendDecisionAndWaitOptions
 )
+
+// NoxyHumanDecisionOutcome values (match proto DecisionOutcome).
+const (
+	NoxyHumanDecisionOutcomePending  = types.NoxyHumanDecisionOutcomePending
+	NoxyHumanDecisionOutcomeApproved = types.NoxyHumanDecisionOutcomeApproved
+	NoxyHumanDecisionOutcomeRejected = types.NoxyHumanDecisionOutcomeRejected
+	NoxyHumanDecisionOutcomeExpired  = types.NoxyHumanDecisionOutcomeExpired
+)
+
+// Re-export decision outcome helpers.
+var (
+	ErrWaitForDecisionOutcomeTimeout = decisionoutcome.ErrWaitForDecisionOutcomeTimeout
+	ErrSendDecisionNoDecisionID      = decisionoutcome.ErrSendDecisionNoDecisionID
+)
+
+// IsTerminalHumanOutcome reports whether the human has finalized (approved, rejected, or expired).
+func IsTerminalHumanOutcome(o types.NoxyHumanDecisionOutcome) bool {
+	return decisionoutcome.IsTerminalHumanOutcome(o)
+}

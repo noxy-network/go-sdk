@@ -19,7 +19,7 @@ func NewIdentityService() *IdentityService {
 }
 
 // GetDevices returns all devices registered for the given identity address.
-func (s *IdentityService) GetDevices(ctx context.Context, client noxy.PushServiceClient, authToken, identityID string) ([]types.NoxyIdentityDevice, error) {
+func (s *IdentityService) GetDevices(ctx context.Context, client noxy.AgentServiceClient, authToken, identityID string) ([]types.NoxyIdentityDevice, error) {
 	req := &noxy.GetIdentityDevicesRequest{
 		RequestId:  uuid.New().String(),
 		IdentityId: identityID,
