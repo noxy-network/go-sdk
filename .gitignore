@@ -3,5 +3,3 @@ internal/kyber/build/
 
 # pq-wasm fetched from GitHub at build time
 .pq-wasm/
-
-/examples/
